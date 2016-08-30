@@ -24,7 +24,7 @@ pip install django-nagios-cache
 ```
 After that you have to add ```nagios_cache``` to your ```INSTALLED_APPS``` and
 run
-```python
+```
 python manage.py migrate nagios_cache
 ```
 This will add the 4 Models to your database.
@@ -33,10 +33,10 @@ This will add the 4 Models to your database.
 django-nagios-cache reads 4 configuration variables from your settings.py:
 ```python
 NAGIOS_CACHE_URL = "https://monitoring.example.org/cgi-bin/icinga/status.cgi"
-NAGIOS_CACHE_USER': "nagios_user",
-NAGIOS_CACHE_PASSWORD': "password_4_nagios_123",
-NAGIOS_CACHE_AUTOCLEAN: False
-NAGIOS_CACHE_AUTOCLEAN_DAYS: 5
+NAGIOS_CACHE_USER' = "nagios_user",
+NAGIOS_CACHE_PASSWORD' = "password_4_nagios_123",
+NAGIOS_CACHE_AUTOCLEAN = False
+NAGIOS_CACHE_AUTOCLEAN_DAYS = 5
 ```
 You MUST specify ```NAGIOS_CACHE_URLNAGIOS_CACHE_URL```, while the other 2 are optional.
 If there are no authentication details, ```django-nagios-cache``` will fetch the
@@ -46,14 +46,14 @@ clean up the last ```NAGIOS_CACHE_AUTOCLEAN_DAYS``` unsynced entries.
 
 ## Usage
 At the first run you may want to execute
-```python
+```
 python manage.py nagios_sync
 ```
 
 This will sync everything. Note this could take some time. On my machine 20000 checks, 1500 hosts, 200 hostgroups and 10 servicegroups this take about 4 minutes.
 
 Later you may chose only to sync specific parts. Have a look at
-```python
+```
 ./manage.py nagios_sync --help
 ...
   --hostgroups [HOSTGROUPS [HOSTGROUPS ...]]
@@ -67,9 +67,9 @@ Later you may chose only to sync specific parts. Have a look at
   --clean               Cleanup database entries that are old than 1 day
 ```
 You can add this script to a crontab or use the API for a celery task. Have a
-look at `nagios_cache/management/commands/nagios_sync`. There are the calls for
+look at ```nagios_cache/management/commands/nagios_sync```. There are the calls for
 the commandline options above.
-```
+```python
 from django.utils import timezone
 
 t = timezone.now()

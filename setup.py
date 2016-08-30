@@ -17,7 +17,7 @@ setup(
   url='https://github.com/soerenbe/django-nagios-cache',
   download_url='https://github.com/soerenbe/django-nagios-cache/tarball/0.1',
   keywords=['django', 'nagios', 'icinga'],
-  install_requires=['django', 'requests', 'parsedatetime'],
+  install_requires=['django', 'requests', 'parsedatetime', 'pytz'],
   license='GPL-3',
   classifiers=[
     'Framework :: Django',
