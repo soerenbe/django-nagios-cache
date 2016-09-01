@@ -56,8 +56,8 @@ class NagiosImportable(models.Model):
             log.warn('Only NAGIOS_CACHE_USER or NAGIOS_CACHE_PASSWORD is set. Ignore authentication')
         else:
             auth = ()
-        log.debug('Fetching data from %s' % cls.get_nagios_url(used_url))
-        r = requests.get(cls.get_nagios_url(used_url), auth=auth)
+        log.debug('Fetching data from %s' % used_url)
+        r = requests.get(used_url, auth=auth)
         return r.json()
 
     @classmethod
