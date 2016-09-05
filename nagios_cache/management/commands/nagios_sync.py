@@ -25,6 +25,7 @@ class Command(BaseCommand):
         Note that importing a hostgroup will NOT import the associated services. (But importing a servicegroup will)
         """
         parser.add_argument('--hostgroups', nargs='*', type=str, help='Only sync the given hostgroups')
+        parser.add_argument('--hostgroup-services', nargs='*', type=str, help='Sync hostgroups and all services of them')
         parser.add_argument('--servicegroups', nargs='*', type=str, help='Only sync the given servicegroups')
         parser.add_argument('--sync-hosts', action='store_true', help='Sync hosts')
         parser.add_argument('--sync-services', action='store_true', help='Sync services')
@@ -52,6 +53,9 @@ class Command(BaseCommand):
             NagiosHostStatus.import_all(current_time)
         if options['sync_hostgroups']:
             NagiosHostgroup.import_all(current_time)
+        if options['hostgroup_services']:
+            for i in options['hostgroup_services']:
+                NagiosHostgroup.import_single(current_time, i, import_services=True)
         if options['sync_services']:
             NagiosServiceStatus.import_all(current_time)
         if options['sync_servicegroups']:
@@ -72,6 +76,7 @@ class Command(BaseCommand):
             and not options['hostgroups']
             and not options['servicegroups']
             and not options['clean']
+            and not options['hostgroup_services']
             ):
             NagiosHostStatus.import_all(current_time)
             NagiosHostgroup.import_all(current_time)

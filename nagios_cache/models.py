@@ -194,11 +194,11 @@ class NagiosServiceStatus(NagiosStatus):
         return "%s | %s" % (self.host.host_display_name, self.service_display_name)
 
     @staticmethod
-    def import_all(current_time):
+    def import_from_url(current_time, url):
         NagiosServiceStatus.run_autoclean()
-        items = NagiosServiceStatus.get_json_from_url(NagiosServiceStatus.suffix)
+        items = NagiosServiceStatus.get_json_from_url(url)
         nagios_list = items['status']['service_status']
-        log.info('Importing %s NagiosServiceStatus from %s' % (len(nagios_list), NagiosServiceStatus.get_nagios_url(NagiosServiceStatus.suffix)))
+        log.info('Importing %s NagiosServiceStatus from %s' % (len(nagios_list), NagiosServiceStatus.get_nagios_url(url)))
         for current_status in nagios_list:
             # Create a database object
             obj = NagiosServiceStatus.nagios2object(current_status, current_time)
@@ -210,28 +210,36 @@ class NagiosServiceStatus(NagiosStatus):
             obj.save()
 
 
+    @staticmethod
+    def import_all(current_time):
+        NagiosServiceStatus.import_from_url(current_time, NagiosServiceStatus.suffix)
+
+
 class NagiosHostgroup(NagiosImportable):
     name = models.CharField(max_length=200)
     hosts = models.ManyToManyField(NagiosHostStatus)
 
     suffix = 'hostgroup=all&style=overview&jsonoutput'
     suffix_single = 'hostgroup=%s&style=overview&jsonoutput'
+    suffix_services = 'hostgroup=%s&style=detail&jsonoutput'
 
     def __unicode__(self):
         return self.name
 
     @staticmethod
-    def __import_hostgroup(hostgroup, hostgroup_members, fail_logger):
+    def __import_hostgroup(hostgroup, hostgroup_members, fail_logger, current_time, import_services=False):
         for i in hostgroup_members:
             try:
                 h = NagiosHostStatus.objects.get(host_name=i['host_name'])
                 hostgroup.hosts.add(h)
             except:
-                fail_logger('Could not find host %s. Not adding it to hostgroup %s' % (i.host_name, hostgroup.name))
+                fail_logger('Could not find host %s. Not adding it to hostgroup %s' % (i['host_name'], hostgroup.name))
+        if import_services:
+            NagiosServiceStatus.import_from_url(current_time, NagiosHostgroup.suffix_services % hostgroup.name)
         hostgroup.save()
 
     @staticmethod
-    def import_single(current_time, hostgroup):
+    def import_single(current_time, hostgroup, import_services=False):
         """
         With this method we ca import a single hostgroup
         """
@@ -241,10 +249,10 @@ class NagiosHostgroup(NagiosImportable):
         hostgroup = NagiosHostgroup.objects.get(name=hostgroup)
         hostgroup.last_database_update = current_time
         hostgroup.hosts.clear()
-        items = NagiosHostgroup.get_json_from_url(NagiosServiceStatus.suffix_single % hostgroup)
+        items = NagiosHostgroup.get_json_from_url(NagiosHostgroup.suffix_single % hostgroup)
         nagios_list = items['status']['hostgroup_overview'][0]['members']
-        log.info('Importing NagiosHostgroup %s with %s members from %s' % (hostgroup, len(nagios_list), NagiosHostgroup.get_nagios_url(NagiosHostgroup.suffix)))
-        NagiosHostgroup.__import_hostgroup(hostgroup, nagios_list, log.warn)
+        log.info('Importing NagiosHostgroup %s with %s members from %s' % (hostgroup, len(nagios_list), NagiosHostgroup.get_nagios_url(NagiosHostgroup.suffix_single % hostgroup)))
+        NagiosHostgroup.__import_hostgroup(hostgroup, nagios_list, log.warn, current_time, import_services)
 
 
     @staticmethod
@@ -257,7 +265,7 @@ class NagiosHostgroup(NagiosImportable):
             current_hostgroup_obj, created = NagiosHostgroup.objects.get_or_create(name=current_hostgroup['hostgroup_name'])
             current_hostgroup_obj.last_database_update = current_time
             current_hostgroup_obj.hosts.clear()
-            NagiosHostgroup.__import_hostgroup(current_hostgroup_obj, current_hostgroup['members'], log.error)
+            NagiosHostgroup.__import_hostgroup(current_hostgroup_obj, current_hostgroup['members'], log.error, current_time)
 
 
 class NagiosServicegroup(NagiosImportable):
