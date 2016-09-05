@@ -102,6 +102,7 @@ class NagiosStatus(NagiosImportable):
     STATUS_CRITICAL = 5
     STATUS_UNKNOWN = 6
     STATUS_PENDING = 7
+    STATUS_UNREACHABLE = 8
 
     STATE_TYPE = [
         [STATE_TYPE_HARD, 'HARD'],
@@ -116,6 +117,7 @@ class NagiosStatus(NagiosImportable):
         [STATUS_CRITICAL, 'CRITICAL'],
         [STATUS_UNKNOWN, 'UNKNOWN'],
         [STATUS_PENDING, 'PENDING'],
+        [STATUS_UNREACHABLE, 'UNREACHABLE'],
     ]
 
     action_url = models.URLField(blank=True, null=True)
