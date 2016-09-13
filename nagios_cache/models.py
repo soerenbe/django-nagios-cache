@@ -25,7 +25,7 @@ class NagiosImportable(models.Model):
 
     @classmethod
     def clean_old(cls, td=1):
-        query = cls.objects.filter(last_database_update=timezone.now()-timedelta(days=td))
+        query = cls.objects.filter(last_database_update__lt=timezone.now()-timedelta(days=td))
         log.debug('Removing %s old entries for %s that are older than %s days' % (query.count(), cls.__name__, td))
 
 

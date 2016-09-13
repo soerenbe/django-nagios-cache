@@ -9,7 +9,7 @@ with open('README.md') as file:
 setup(
   name='django-nagios-cache',
   packages=find_packages(exclude=['build', 'demo']),
-  version='0.1.3',
+  version='0.1.4',
   description='A Django library that sync data from a Nagios/Icinga server.',
   long_description=long_description,
   author='Sören Berger',
