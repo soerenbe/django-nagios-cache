@@ -9,6 +9,8 @@ DEFAULT_CONFIG = {
     'NAGIOS_CACHE_URL': None,
     'NAGIOS_CACHE_USER': None,
     'NAGIOS_CACHE_PASSWORD': None,
+    'NAGIOS_CACHE_CLEANCOMMAND_DAYS': 1,
+    'NAGIOS_CACHE_CLEANCOMMAND_HOURS': 0,
     'NAGIOS_CACHE_AUTOCLEAN': False,
     'NAGIOS_CACHE_AUTOCLEAN_DAYS': 1,
 }
@@ -35,6 +37,9 @@ def config_validation(app_configs, **kwargs):
         errors.append(Error('You must define settings.NAGIOS_CACHE_URL', id='nagios_cache.E001'))
     if settings.NAGIOS_CACHE_AUTOCLEAN and not type(settings.NAGIOS_CACHE_AUTOCLEAN_DAYS) == int:
         errors.append(Error('settings.NAGIOS_CACHE_AUTOCLEAN_DAYS must be an integer', id='nagios_cache.E002'))
-
+    if settings.NAGIOS_CACHE_CLEANCOMMAND_DAYS == 0 and settings.NAGIOS_CACHE_CLEANCOMMAND_HOURS == 0:
+        errors.append(Error('settings.NAGIOS_CACHE_CLEANCOMMAND_DAYS and NAGIOS_CACHE_CLEANCOMMAND_HOURS are 0. '
+                            'Every nagios_clean command will wipe your database. This is properly not what you want.',
+                            id='nagios_cache.E003'))
     return errors
 
