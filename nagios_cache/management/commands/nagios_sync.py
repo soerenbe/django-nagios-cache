@@ -14,8 +14,6 @@ from nagios_cache.models import NagiosServiceStatus, NagiosHostStatus, NagiosHos
 class Command(BaseCommand):
     help = 'Sync Nagios with the database. If no parameter is given all data will be synced'
 
-    PROGRESS_LOG_TIME = 10
-
     def __init__(self, *args, **kwargs):
         super(Command, self).__init__(*args, **kwargs)
 
@@ -31,7 +29,6 @@ class Command(BaseCommand):
         parser.add_argument('--sync-services', action='store_true', help='Sync services')
         parser.add_argument('--sync-hostgroups', action='store_true', help='Sync hostgroups')
         parser.add_argument('--sync-servicegroups', action='store_true', help='Sync servicegroups')
-        parser.add_argument('--clean', action='store_true', help='Cleanup database entries that are old than 1 day')
 
     @transaction.atomic
     def handle(self, *args, **options):
@@ -44,11 +41,6 @@ class Command(BaseCommand):
         """
         # We have to save the current time for later cleanup
         current_time = timezone.now()
-        if options['clean']:
-            NagiosHostStatus.clean_old()
-            NagiosHostgroup.clean_old()
-            NagiosServiceStatus.clean_old()
-            NagiosServicegroup.clean_old()
         if options['sync_hosts']:
             NagiosHostStatus.import_all(current_time)
         if options['sync_hostgroups']:
@@ -75,7 +67,6 @@ class Command(BaseCommand):
             and not options['sync_servicegroups']
             and not options['hostgroups']
             and not options['servicegroups']
-            and not options['clean']
             and not options['hostgroup_services']
             ):
             NagiosHostStatus.import_all(current_time)

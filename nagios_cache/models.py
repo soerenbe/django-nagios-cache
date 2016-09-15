@@ -24,15 +24,15 @@ class NagiosImportable(models.Model):
     last_database_update = models.DateTimeField(auto_now_add=True)
 
     @classmethod
-    def clean_old(cls, td=1):
-        query = cls.objects.filter(last_database_update__lt=timezone.now()-timedelta(days=td))
-        log.debug('Removing %s old entries for %s that are older than %s days' % (query.count(), cls.__name__, td))
+    def clean_old(cls, days=0, hours=0):
+        query = cls.objects.filter(last_database_update__lt=timezone.now()-timedelta(days=days)-timedelta(hours=hours))
+        log.debug('Removing %s old entries for %s that are older than %s days and %s hours' % (query.count(), cls.__name__, days, hours))
 
 
     @classmethod
     def run_autoclean(cls):
         if settings.NAGIOS_CACHE_AUTOCLEAN:
-            cls.objects.filter(last_database_update=datetime.now()-timedelta(days=settings.NAGIOS_CACHE_AUTOCLEAN_DAYS))
+            cls.clean_old(days=settings.NAGIOS_CACHE_AUTOCLEAN_DAYS)
 
     @staticmethod
     def get_nagios_url(suffix):
