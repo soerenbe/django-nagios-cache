@@ -57,7 +57,9 @@ class NagiosImportable(models.Model):
         else:
             auth = ()
         log.debug('Fetching data from %s' % used_url)
+        t = timezone.now()
         r = requests.get(used_url, auth=auth)
+        log.debug('Download took %s seconds' % (timezone.now()-t))
         return r.json()
 
     @classmethod
@@ -173,6 +175,7 @@ class NagiosHostStatus(NagiosStatus):
         items = NagiosHostStatus.get_json_from_url(NagiosHostStatus.suffix)
         nagios_list = items['status']['host_status']
         log.info('Importing %s NagiosHostStatus from %s' % (len(nagios_list), NagiosHostStatus.get_nagios_url(NagiosHostStatus.suffix)))
+        t = timezone.now()
         for current_status in nagios_list:
             # Create a database object
             obj = NagiosHostStatus.nagios2object(current_status, current_time)
@@ -180,6 +183,7 @@ class NagiosHostStatus(NagiosStatus):
             if NagiosHostStatus.objects.filter(host_name=obj.host_name).exists():
                 obj.id = NagiosHostStatus.objects.get(host_name=obj.host_name).id
             obj.save()
+        log.debug('Import took %s seconds' % (timezone.now() - t))
 
 
 class NagiosServiceStatus(NagiosStatus):
@@ -201,6 +205,7 @@ class NagiosServiceStatus(NagiosStatus):
         items = NagiosServiceStatus.get_json_from_url(url)
         nagios_list = items['status']['service_status']
         log.info('Importing %s NagiosServiceStatus from %s' % (len(nagios_list), NagiosServiceStatus.get_nagios_url(url)))
+        t = timezone.now()
         for current_status in nagios_list:
             # Create a database object
             obj = NagiosServiceStatus.nagios2object(current_status, current_time)
@@ -210,7 +215,7 @@ class NagiosServiceStatus(NagiosStatus):
                 # If the object already exists, assign the PK to the new object.
                 obj.id = NagiosServiceStatus.objects.get(host_name=obj.host_name, service_description=obj.service_description).id
             obj.save()
-
+        log.debug('Import took %s seconds' % (timezone.now() - t))
 
     @staticmethod
     def import_all(current_time):
@@ -263,11 +268,13 @@ class NagiosHostgroup(NagiosImportable):
         items = NagiosHostgroup.get_json_from_url(NagiosHostgroup.suffix)
         nagios_list = items['status']['hostgroup_overview']
         log.info('Importing %s NagiosHostgroup from %s' % (len(nagios_list), NagiosHostgroup.get_nagios_url(NagiosHostgroup.suffix)))
+        t = timezone.now()
         for current_hostgroup in nagios_list:
             current_hostgroup_obj, created = NagiosHostgroup.objects.get_or_create(name=current_hostgroup['hostgroup_name'])
             current_hostgroup_obj.last_database_update = current_time
             current_hostgroup_obj.hosts.clear()
             NagiosHostgroup.__import_hostgroup(current_hostgroup_obj, current_hostgroup['members'], log.error, current_time)
+        log.debug('Import took %s seconds' % (timezone.now() - t))
 
 
 class NagiosServicegroup(NagiosImportable):
@@ -313,6 +320,7 @@ class NagiosServicegroup(NagiosImportable):
         json_result = NagiosServicegroup.get_json_from_url(NagiosServicegroup.suffix)
         nagios_service_groups = json_result['status']['servicegroup_overview']
         log.info('Importing %s NagiosServicegroup from %s' % (len(nagios_service_groups), NagiosServicegroup.get_nagios_url(NagiosServicegroup.suffix)))
+        t = timezone.now()
         for current_service_group in nagios_service_groups:
             current_servicegroup_obj, created = NagiosServicegroup.objects.get_or_create(name=current_service_group['servicegroup_name'])
             current_servicegroup_obj.last_database_update = current_time
@@ -320,3 +328,4 @@ class NagiosServicegroup(NagiosImportable):
             service_group_checks = NagiosServicegroup.get_json_from_url(NagiosServicegroup.suffix_single % current_servicegroup_obj.name)
             log.debug('Importing %s services for service group %s' % (len(service_group_checks['status']['service_status']), current_servicegroup_obj.name))
             NagiosServicegroup.__import_servicegroup(current_servicegroup_obj, service_group_checks['status']['service_status'], log.error)
+        log.debug('Import took %s seconds' % (timezone.now() - t))
