@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+
 
 import parsedatetime
 import pytz
@@ -67,7 +67,7 @@ class NagiosImportable(models.Model):
         # Map the dict to the class attributes
         obj = cls(**nagios_dict)
         # Fix fields that does not match the datatype
-        obj.attempts, obj.attempts_of = map(int, obj.attempts.split('/'))
+        obj.attempts, obj.attempts_of = list(map(int, obj.attempts.split('/')))
         # parse the duration field and assign it to the duration field.
         # Unfortunatly the nagios syntax is kinda strange...
         cal = parsedatetime.Calendar()

@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+
 
 from django.apps import AppConfig
 from django.conf import settings
@@ -20,7 +20,7 @@ class NagiosCacheConfig(AppConfig):
     name = 'nagios_cache'
 
     def ready(self):
-        for k, v in DEFAULT_CONFIG.iteritems():
+        for k, v in list(DEFAULT_CONFIG.items()):
             if not hasattr(settings, k):
                 setattr(settings, k, v)
 
